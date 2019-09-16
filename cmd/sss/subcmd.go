@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/xyths/sss/cmd/utils"
 	"github.com/xyths/sss/stake"
 	"gopkg.in/urfave/cli.v2"
 	"io"
 	"log"
-	"math/big"
 	"os"
+	"sort"
 )
 
 var (
@@ -19,12 +20,82 @@ var (
 		Usage:   "Sum staking SERO from all stake",
 		Flags: []cli.Flag{
 			utils.StakeFlag,
+			utils.CsvFlag,
+			utils.FilterCompanyFlag,
+		},
+	}
+	snapshotCommand = &cli.Command{
+		Action:  snapshot,
+		Name:    "snapshot",
+		Aliases: []string{"snap"},
+		Usage:   "Snapshot staking status of all stake",
+		Flags: []cli.Flag{
+			utils.StakeFlag,
+			utils.CsvFlag,
+			utils.FilterCompanyFlag,
+		},
+	}
+	profitCommand = &cli.Command{
+		Action:  profit,
+		Name:    "profit",
+		Aliases: []string{"pf"},
+		Usage:   "sum all profit of all stake",
+		Flags: []cli.Flag{
+			utils.StakeFlag,
+			utils.CsvFlag,
+			utils.FilterCompanyFlag,
 		},
 	}
 )
 
 func sum(ctx *cli.Context) (err error) {
+	stakeList := readStakeList(ctx)
+
+	var balance float64
+	var results []stake.Result
+	for _, sd := range stakeList {
+		res := stake.Sum(sd)
+		results = append(results, res)
+		log.Printf("%s,%d,%d,%d,%f,%f,%f\n", res.Id,
+			res.TotalShare, res.ReturnedShare, res.MortgageShare,
+			res.TotalPrinciple, res.ReturnedPrinciple, res.MortgagePrinciple)
+		balance += res.MortgagePrinciple
+	}
+	log.Printf("Mortgage SERO is: %f\n", balance)
+	return
+}
+
+func snapshot(ctx *cli.Context) error {
+	stakeList := readStakeList(ctx)
+
+	for _, v := range stakeList {
+		if v.Expired > 0 {
+			fmt.Printf("Expired: %s,%d,%d,%d,%s\n", v.Id, v.At, v.Expired, v.Remaining, v.Profit)
+		} else {
+			fmt.Printf("%s,%d,%s,%d,%d,%s\n", v.Id, v.At, v.Price, v.Total, v.Remaining, v.Profit)
+		}
+	}
+
+	return nil
+}
+
+func profit(ctx *cli.Context) error {
+	stakeList := readStakeList(ctx)
+
+	for _, v := range stakeList {
+		if v.Expired > 0 {
+			fmt.Printf("Expired: %s,%d,%d,%d,%s\n", v.Id, v.At, v.Expired, v.Remaining, v.Profit)
+		} else {
+			fmt.Printf("%s,%d,%s,%d,%d,%s\n", v.Id, v.At, v.Price, v.Total, v.Remaining, v.Profit)
+		}
+	}
+
+	return nil
+}
+
+func readStakeList(ctx *cli.Context) []stake.StakeDetail {
 	filename := ctx.String(utils.StakeFlag.Name)
+	com := ctx.String(utils.FilterCompanyFlag.Name)
 	file, err := os.Open(filename)
 	if err != nil {
 		panic(err)
@@ -32,32 +103,25 @@ func sum(ctx *cli.Context) (err error) {
 
 	defer file.Close()
 
-	stakeList := json.NewDecoder(file)
-
-	balanceXH := big.NewFloat(0)
-	balanceJRXC := big.NewFloat(0)
+	decoder := json.NewDecoder(file)
+	var stakeList []stake.StakeDetail
 	for {
 		var sd stake.StakeDetail
-		if err := stakeList.Decode(&sd); err == io.EOF {
+		if err := decoder.Decode(&sd); err == io.EOF {
 			break
 		} else if err != nil {
 			log.Fatal(err)
-		}
-
-		if remain, err := stake.Sum(sd); err == nil {
-			log.Printf("%s\tid %s remain sero: %v\n", sd.Company, sd.Id, remain)
-
-			switch sd.Company {
-			case "xh":
-				balanceXH.Add(balanceXH, remain)
-			case "jrxc":
-				balanceJRXC.Add(balanceJRXC, remain)
-			}
 		} else {
-			log.Printf("id: %s %s\n", sd.Id, err)
+			if com == "" || com == sd.Company {
+				stakeList = append(stakeList, sd)
+			}
 		}
 	}
-	log.Printf("xh balance is: %v", balanceXH)
-	log.Printf("jrxc balance is: %v", balanceJRXC)
-	return
+	//for k, v := range stakeList {
+	//	log.Println(k, v.Id, v.At)
+	//}
+	sort.Slice(stakeList, func(i, j int) bool {
+		return stakeList[i].At < stakeList[j].At
+	})
+	return stakeList
 }

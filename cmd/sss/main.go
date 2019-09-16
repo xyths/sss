@@ -17,15 +17,14 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "The sss(SERO stake statistics) command line interface",
-		Version: "0.0.3",
+		Version: "0.0.4",
 		Action:  sss,
 	}
 	Info(app)
 	app.Commands = []*cli.Command{
 		sumCommand,
-		//downloadCommand,
-		//listenCommand,
-		//timerCommand,
+		snapshotCommand,
+		profitCommand,
 	}
 	app.Flags = []cli.Flag{
 		utils.FileFlag,

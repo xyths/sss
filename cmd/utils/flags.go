@@ -15,4 +15,16 @@ var (
 		Value:   "stake.json",
 		Usage:   "Read stake detail info from `STAKE`",
 	}
+	CsvFlag = &cli.StringFlag{
+		Name:    "output",
+		Aliases: []string{"o"},
+		Value:   "stake.csv",
+		Usage:   "Output stake profit snapshot to `CSV`",
+	}
+	FilterCompanyFlag = &cli.StringFlag{
+		Name:    "company",
+		Aliases: []string{"com"},
+		Value:   "",
+		Usage:   "Only print `company`'s stake",
+	}
 )
