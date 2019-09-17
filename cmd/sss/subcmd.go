@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/xyths/sss/cmd/utils"
+	"github.com/xyths/sss/mail/client"
 	"github.com/xyths/sss/stake"
 	"gopkg.in/urfave/cli.v2"
+	"html/template"
 	"io"
 	"log"
 	"os"
@@ -44,6 +47,24 @@ var (
 			utils.StakeFlag,
 			utils.CsvFlag,
 			utils.FilterCompanyFlag,
+		},
+	}
+	mailCommand = &cli.Command{
+		Action:  mail,
+		Name:    "mail",
+		Aliases: []string{"m"},
+		Usage:   "mail to investors",
+		Flags: []cli.Flag{
+			utils.MailConfigFlag,
+		},
+	}
+	testCommand = &cli.Command{
+		Action:  test,
+		Name:    "test",
+		Aliases: []string{"t"},
+		Usage:   "test some demo program",
+		Flags: []cli.Flag{
+			utils.MailConfigFlag,
 		},
 	}
 )
@@ -93,6 +114,108 @@ func profit(ctx *cli.Context) error {
 	return nil
 }
 
+func mail(ctx *cli.Context) error {
+	user := "pangu_sero_pos@163.com"
+	password := "pgsp20190916"
+	host := "smtp.163.com:25"
+	to := "pangu_sero_pos@163.com"
+
+	subject := "Test send email by golang"
+
+	body := `
+    <html>
+    <body>
+    <h3>
+    "这是GO语言写的测试邮件。"
+    </h3>
+    </body>
+    </html>
+    `
+	fmt.Println("send email")
+	err := client.SendMail(user, password, host, to, subject, body, "html")
+	if err != nil {
+		fmt.Println("send mail error!")
+		fmt.Println(err)
+	} else {
+		fmt.Println("send mail success!")
+	}
+
+	return nil
+}
+
+func test(ctx *cli.Context) error {
+	user := "pangu_sero_pos@163.com"
+	password := "pgsp20190916"
+	host := "smtp.163.com:25"
+	to := "xing_yongtao@163.com"
+
+	subject := "Test send email by Golang"
+
+	tpl1 := template.New("template.html")
+	tpl, err := tpl1.ParseFiles("mail/template/template.html");
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	filename := "data/share_20190912.json"
+	com := "xh"
+	file, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	var stakeList []stake.StakeDetail
+	for {
+		var sd stake.StakeDetail
+		if err := decoder.Decode(&sd); err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err)
+		} else {
+			if com == sd.Company {
+				stakeList = append(stakeList, sd)
+			}
+		}
+	}
+
+	sort.Slice(stakeList, func(i, j int) bool {
+		return stakeList[i].At < stakeList[j].At
+	})
+
+	var results []stake.Result
+
+	for _, sd := range stakeList {
+		res := stake.Sum(sd)
+		results = append(results, res)
+		log.Printf("%s,%d,%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", res.ShortId,
+			res.TotalShare, res.ReturnedShare, res.MortgageShare,
+			res.TotalPrinciple, res.ReturnedPrinciple, res.MortgagePrinciple,
+			res.TotalInterest, res.ReturnedInterest, res.MortgageInterest)
+	}
+
+	report:=stake.FormatReport(results)
+
+	var buf bytes.Buffer
+	if err := tpl.Execute(&buf, report); err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("send email")
+	err = client.SendMail(user, password, host, to, subject, buf.String(), "html")
+	if err != nil {
+		fmt.Println("send mail error!")
+		fmt.Println(err)
+	} else {
+		fmt.Println("send mail success!")
+	}
+
+	return nil
+}
+
 func readStakeList(ctx *cli.Context) []stake.StakeDetail {
 	filename := ctx.String(utils.StakeFlag.Name)
 	com := ctx.String(utils.FilterCompanyFlag.Name)
@@ -117,9 +240,7 @@ func readStakeList(ctx *cli.Context) []stake.StakeDetail {
 			}
 		}
 	}
-	//for k, v := range stakeList {
-	//	log.Println(k, v.Id, v.At)
-	//}
+
 	sort.Slice(stakeList, func(i, j int) bool {
 		return stakeList[i].At < stakeList[j].At
 	})

@@ -27,4 +27,10 @@ var (
 		Value:   "",
 		Usage:   "Only print `company`'s stake",
 	}
+	MailConfigFlag = &cli.StringFlag{
+		Name:    "config",
+		Aliases: []string{"c"},
+		Value:   "config.json",
+		Usage:   "Read mail config from `FILE`",
+	}
 )

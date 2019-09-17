@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <title>Pangu SERO PoS</title>
+    <style>
+        .table-header {
+            border-bottom: 1px solid black
+        }
+
+        .table-footer {
+            border-top: 1px solid black
+        }
+
+        .col-split {
+            border-right: 1px dashed black
+        }
+    </style>
+</head>
+<body>
+<table cellspacing="0" cellpadding="10px">
+    <tr>
+        <th class="table-header"></th>
+        <th class="table-header">股份ID</th>
+        <th class="table-header" align="right">总票数(股)</th>
+        <th class="table-header" align="right">返还票数(股)</th>
+        <th class="table-header" align="right">剩余票数(股)</th>
+        <th class="table-header" align="right">总本金(SERO)</th>
+        <th class="table-header" align="right">返还本金(SERO)</th>
+        <th class="table-header" align="right">剩余本金(SERO)</th>
+        <th class="table-header" align="right">总利润(SERO)</th>
+        <th class="table-header" align="right">返还利润(SERO)</th>
+        <th class="table-header" align="right">剩余利润(SERO)</th>
+        <th class="table-header"></th>
+    </tr>
+    {{range .Shares}}
+        <tr>
+            <td class="table-content"></td>
+            <td class="table-content col-split">{{.Id}}</td>
+            <td class="table-content" align="right">{{.TotalShare}}</td>
+            <td class="table-content" align="right">{{.ReturnedShare}}</td>
+            <td class="table-content col-split" align="right">{{.MortgageShare}}</td>
+            <td class="table-content" align="right">{{.TotalPrinciple}}</td>
+            <td class="table-content" align="right">{{.ReturnedPrinciple}}</td>
+            <td class="table-content col-split" align="right">{{.MortgagePrinciple}}</td>
+            <td class="table-content" align="right">{{.TotalInterest}}</td>
+            <td class="table-content" align="right">{{.ReturnedInterest}}</td>
+            <td class="table-content" align="right">{{.MortgageInterest}}</td>
+            <td class="table-content"></td>
+        </tr>
+    {{end}}
+    <tr>
+        <th class="table-footer"></th>
+        <th class="table-footer">汇总</th>
+        <th class="table-footer" align="right">{{.Summary.TotalShare}}</th>
+        <th class="table-footer" align="right">{{.Summary.ReturnedShare}}</th>
+        <th class="table-footer" align="right">{{.Summary.MortgageShare}}</th>
+        <th class="table-footer" align="right">{{.Summary.TotalPrinciple}}</th>
+        <th class="table-footer" align="right">{{.Summary.ReturnedPrinciple}}</th>
+        <th class="table-footer" align="right">{{.Summary.MortgagePrinciple}}</th>
+        <th class="table-footer" align="right">{{.Summary.TotalInterest}}</th>
+        <th class="table-footer" align="right">{{.Summary.ReturnedInterest}}</th>
+        <th class="table-footer" align="right">{{.Summary.MortgageInterest}}</th>
+        <th class="table-footer"></th>
+    </tr>
+</table>
+</body>
+</html>
