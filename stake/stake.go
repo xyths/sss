@@ -2,7 +2,6 @@ package stake
 
 import (
 	"context"
-	"github.com/sero-cash/go-sero/seroclient"
 	"github.com/xyths/sss/sero"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -104,11 +103,6 @@ type Report struct {
 
 func Stat(id string) (result Result, err error) {
 	log.Printf("start process share id = %s\n", id)
-	// 华南(成都): http://148.70.169.73:8545
-	// 华南(广州): http://129.204.197.105:8545
-	// Japan:     http://52.199.145.159:8545
-	client, err := seroclient.Dial("http://148.70.169.73:8545")
-	defer client.Close()
 
 	if err != nil {
 		log.Fatal(err)
@@ -117,8 +111,8 @@ func Stat(id string) (result Result, err error) {
 	}
 
 	ctx := context.Background()
-	sero.GetStakeInfo(client, ctx, id)
-	sero.GetTransactionReceipt(client, ctx, id)
+	sero.GetStakeInfo(ctx, id)
+	sero.GetTransactionReceipt(ctx, id)
 
 	log.Printf("end process share id = %s\n", id)
 	return
@@ -177,30 +171,30 @@ func Sum(sd StakeDetail) (r Result) {
 	r.ReturnedInterest, _ = returnedInterest.Float64()
 	r.MortgageInterest = r.TotalInterest - r.ReturnedInterest
 
-	log.Printf(`	id: %s
-	buyBlock: %d
-	lastPayBlock: %d
-	TotalShare: %d
-	ReturnedShare:	%d
-		Checked:	%d
-		Expire:		%d
-	MortgageShare:	%d
-		Remaining:	%d
-		Income:		%d
-		Expire:		%d
-	TotalPrinciple:		%.2f
-	ReturnedPrinciple:	%.2f
-	MortgagePrinciple:	%.2f
-	TotalInterest:		%.2f
-	ReturnedInterest:	%.2f
-	MortgageInterest:	%.2f
-	`,
-		r.Id, r.BuyBlock, r.LastPayBlock,
-		r.TotalShare,
-		r.ReturnedShare, r.CheckedShare, r.ExpiredAndReturnShare,
-		r.MortgageShare, r.RemainShare, r.IncomeShare, r.ExpireNoReturnShare,
-		r.TotalPrinciple, r.ReturnedPrinciple, r.MortgagePrinciple,
-		r.TotalInterest, r.ReturnedInterest, r.MortgageInterest)
+	//log.Printf(`	id: %s
+	//buyBlock: %d
+	//lastPayBlock: %d
+	//TotalShare: %d
+	//ReturnedShare:	%d
+	//	Checked:	%d
+	//	Expire:		%d
+	//MortgageShare:	%d
+	//	Remaining:	%d
+	//	Income:		%d
+	//	Expire:		%d
+	//TotalPrinciple:		%.2f
+	//ReturnedPrinciple:	%.2f
+	//MortgagePrinciple:	%.2f
+	//TotalInterest:		%.2f
+	//ReturnedInterest:	%.2f
+	//MortgageInterest:	%.2f
+	//`,
+	//	r.Id, r.BuyBlock, r.LastPayBlock,
+	//	r.TotalShare,
+	//	r.ReturnedShare, r.CheckedShare, r.ExpiredAndReturnShare,
+	//	r.MortgageShare, r.RemainShare, r.IncomeShare, r.ExpireNoReturnShare,
+	//	r.TotalPrinciple, r.ReturnedPrinciple, r.MortgagePrinciple,
+	//	r.TotalInterest, r.ReturnedInterest, r.MortgageInterest)
 
 	return
 }

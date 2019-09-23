@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/xyths/sss/cmd/utils"
+	. "github.com/xyths/sss/mail"
 	"github.com/xyths/sss/mail/client"
+	"github.com/xyths/sss/share"
 	"github.com/xyths/sss/stake"
 	"gopkg.in/urfave/cli.v2"
 	"html/template"
@@ -16,6 +19,16 @@ import (
 )
 
 var (
+	appendCommand = &cli.Command{
+		Action:  appendShare,
+		Name:    "append",
+		Aliases: []string{"a"},
+		Usage:   "Append stake share to db",
+		Flags: []cli.Flag{
+			utils.AppendConfigFlag,
+			utils.ShareListFlag,
+		},
+	}
 	sumCommand = &cli.Command{
 		Action:  sum,
 		Name:    "sum",
@@ -56,6 +69,7 @@ var (
 		Usage:   "mail to investors",
 		Flags: []cli.Flag{
 			utils.MailConfigFlag,
+			utils.DateFlag,
 		},
 	}
 	testCommand = &cli.Command{
@@ -69,6 +83,16 @@ var (
 	}
 )
 
+func appendShare(ctx *cli.Context) (err error) {
+	filename := ctx.String(utils.MailConfigFlag.Name);
+	if filename == "" {
+		return errors.New("no config")
+	}
+	config := utils.LoadAppendConfig(filename)
+	csvfile := ctx.String(utils.ShareListFlag.Name)
+	return share.AppendShare(config, csvfile)
+}
+
 func sum(ctx *cli.Context) (err error) {
 	stakeList := readStakeList(ctx)
 
@@ -77,9 +101,10 @@ func sum(ctx *cli.Context) (err error) {
 	for _, sd := range stakeList {
 		res := stake.Sum(sd)
 		results = append(results, res)
-		log.Printf("%s,%d,%d,%d,%f,%f,%f\n", res.Id,
+		log.Printf("%s,%d,%d,%d,%f,%f,%f,%f,%f,%f\n", res.Id,
 			res.TotalShare, res.ReturnedShare, res.MortgageShare,
-			res.TotalPrinciple, res.ReturnedPrinciple, res.MortgagePrinciple)
+			res.TotalPrinciple, res.ReturnedPrinciple, res.MortgagePrinciple,
+			res.TotalInterest, res.ReturnedInterest, res.MortgageInterest)
 		balance += res.MortgagePrinciple
 	}
 	log.Printf("Mortgage SERO is: %f\n", balance)
@@ -115,32 +140,14 @@ func profit(ctx *cli.Context) error {
 }
 
 func mail(ctx *cli.Context) error {
-	user := "pangu_sero_pos@163.com"
-	password := "pgsp20190916"
-	host := "smtp.163.com:25"
-	to := "pangu_sero_pos@163.com"
-
-	subject := "Test send email by golang"
-
-	body := `
-    <html>
-    <body>
-    <h3>
-    "这是GO语言写的测试邮件。"
-    </h3>
-    </body>
-    </html>
-    `
-	fmt.Println("send email")
-	err := client.SendMail(user, password, host, to, subject, body, "html")
-	if err != nil {
-		fmt.Println("send mail error!")
-		fmt.Println(err)
-	} else {
-		fmt.Println("send mail success!")
+	filename := ctx.String(utils.MailConfigFlag.Name);
+	if filename == "" {
+		return errors.New("no config")
 	}
+	config := utils.Load(filename)
+	date := ctx.String(utils.DateFlag.Name)
 
-	return nil
+	return Mail(config, date)
 }
 
 func test(ctx *cli.Context) error {
@@ -197,7 +204,7 @@ func test(ctx *cli.Context) error {
 			res.TotalInterest, res.ReturnedInterest, res.MortgageInterest)
 	}
 
-	report:=stake.FormatReport(results)
+	report := stake.FormatReport(results)
 
 	var buf bytes.Buffer
 	if err := tpl.Execute(&buf, report); err != nil {

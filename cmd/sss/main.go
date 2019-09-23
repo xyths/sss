@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"github.com/xyths/sss/cmd/utils"
-	"github.com/xyths/sss/stake"
 	"gopkg.in/urfave/cli.v2"
-	"io"
 	"os"
 	"path/filepath"
 )
@@ -17,19 +13,17 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "The sss(SERO stake statistics) command line interface",
-		Version: "0.0.5",
+		Version: "0.0.6",
 		Action:  sss,
 	}
 	Info(app)
 	app.Commands = []*cli.Command{
+		appendCommand,
 		sumCommand,
 		snapshotCommand,
 		profitCommand,
 		mailCommand,
 		testCommand,
-	}
-	app.Flags = []cli.Flag{
-		utils.FileFlag,
 	}
 }
 
@@ -41,27 +35,27 @@ func main() {
 }
 
 func sss(ctx *cli.Context) error {
-	filename := ctx.String(utils.FileFlag.Name)
-	file, err := os.Open(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-
-	var results []stake.Result
-	for {
-		line, _, err := reader.ReadLine()
-
-		if err == io.EOF {
-			break
-		}
-		if res, err := stake.Stat(string(line)); err != nil {
-			results = append(results, res)
-		}
-		//log.Printf("%s\n", line)
-	}
+	//filename := ctx.String(utils.FileFlag.Name)
+	//file, err := os.Open(filename)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//defer file.Close()
+	//
+	//reader := bufio.NewReader(file)
+	//
+	//var results []stake.Result
+	//for {
+	//	line, _, err := reader.ReadLine()
+	//
+	//	if err == io.EOF {
+	//		break
+	//	}
+	//	if res, err := stake.Stat(string(line)); err != nil {
+	//		results = append(results, res)
+	//	}
+	//	//log.Printf("%s\n", line)
+	//}
 	return nil
 }

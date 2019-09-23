@@ -3,11 +3,17 @@ package utils
 import "gopkg.in/urfave/cli.v2"
 
 var (
-	FileFlag = &cli.StringFlag{
-		Name:    "file",
-		Aliases: []string{"f"},
-		Value:   "stake.txt",
-		Usage:   "Read stake list from `FILE`",
+	AppendConfigFlag = &cli.StringFlag{
+		Name:    "config",
+		Aliases: []string{"c"},
+		Value:   "config.json",
+		Usage:   "Read append config from `FILE`",
+	}
+	ShareListFlag = &cli.StringFlag{
+		Name:    "list",
+		Aliases: []string{"l"},
+		Value:   "shares.csv",
+		Usage:   "Read share list from `FILE`",
 	}
 	StakeFlag = &cli.StringFlag{
 		Name:    "stake",
@@ -18,13 +24,11 @@ var (
 	CsvFlag = &cli.StringFlag{
 		Name:    "output",
 		Aliases: []string{"o"},
-		Value:   "stake.csv",
+		Value:   "shares.csv",
 		Usage:   "Output stake profit snapshot to `CSV`",
 	}
 	FilterCompanyFlag = &cli.StringFlag{
 		Name:    "company",
-		Aliases: []string{"com"},
-		Value:   "",
 		Usage:   "Only print `company`'s stake",
 	}
 	MailConfigFlag = &cli.StringFlag{
@@ -32,5 +36,10 @@ var (
 		Aliases: []string{"c"},
 		Value:   "config.json",
 		Usage:   "Read mail config from `FILE`",
+	}
+	DateFlag = &cli.StringFlag{
+		Name:    "date",
+		Aliases: []string{"d"},
+		Usage:   "Report `DATE`, like 20190916",
 	}
 )
