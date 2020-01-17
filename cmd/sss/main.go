@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/xyths/sss/cmd/utils"
 	"gopkg.in/urfave/cli.v2"
 	"os"
 	"path/filepath"
@@ -16,7 +17,7 @@ func init() {
 		Version: "0.0.6",
 		Action:  sss,
 	}
-	Info(app)
+	utils.Info(app)
 	app.Commands = []*cli.Command{
 		appendCommand,
 		sumCommand,

@@ -28,8 +28,8 @@ var (
 		Usage:   "Output stake profit snapshot to `CSV`",
 	}
 	FilterCompanyFlag = &cli.StringFlag{
-		Name:    "company",
-		Usage:   "Only print `company`'s stake",
+		Name:  "company",
+		Usage: "Only print `company`'s stake",
 	}
 	MailConfigFlag = &cli.StringFlag{
 		Name:    "config",
