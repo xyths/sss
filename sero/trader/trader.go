@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/sero-cash/go-sero/rpc"
 	"github.com/sero-cash/go-sero/zero/txtool"
+	"github.com/xyths/sero-go"
 	"github.com/xyths/sss/sero/types"
 	"log"
 	"math/big"
@@ -50,6 +51,11 @@ func NewTrader(cfg SeroConfig) (t *Trader, err error) {
 
 func (t *Trader) BulkTransfer(ctx context.Context, records [][]string) {
 	unit := big.NewInt(1e18)
+	api, err := sero.New(t.Rpc)
+	defer api.Close()
+	if err != nil {
+		log.Fatalf("error when new api: %s", err)
+	}
 	for i, r := range records {
 		select {
 		case <-ctx.Done():
@@ -65,13 +71,18 @@ func (t *Trader) BulkTransfer(ctx context.Context, records [][]string) {
 				continue
 			}
 			amount.Mul(amount, unit)
-			hash, err := t.transfer(ctx, to, currency, amount)
-			if err != nil {
-				log.Printf("error when transfer %s", to)
-				continue
+			//hash, err := t.transfer(ctx, to, currency, amount)
+			//if err != nil {
+			//	log.Printf("error when transfer %s", to)
+			//	continue
+			//}
+			//now := time.Now().Format("2006-01-02 15:04:05")
+			//log.Printf("[%d] %s sent to %s(%s) %d %s, hash is %s", i, now, r[0], to, amount, currency, hash)
+			if trans, err := api.SendAndWait(ctx, t.From, t.Refund, to, currency, amount, 12); err == nil {
+				log.Printf("[INFO] to: %s, amount: %s, tx: %s, time: %s", to, amount, trans.TransactionHash, time.Now())
+			} else {
+				log.Printf("error when SendAndWait: %s", err)
 			}
-			now := time.Now().Format("2006-01-02 15:04:05")
-			log.Printf("[%d] %s sent to %s(%s) %d %s, hash is %s", i, now, r[0], to, amount, currency, hash)
 		}
 	}
 	return
