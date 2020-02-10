@@ -17,7 +17,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "bulk transfer money",
-		Version: "0.1.1",
+		Version: "0.1.2",
 		Action:  bulkTransfer,
 		Flags: []cli.Flag{
 			ConfigFlag,

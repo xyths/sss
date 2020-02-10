@@ -78,7 +78,7 @@ func (t *Trader) BulkTransfer(ctx context.Context, records [][]string) {
 			//}
 			//now := time.Now().Format("2006-01-02 15:04:05")
 			//log.Printf("[%d] %s sent to %s(%s) %d %s, hash is %s", i, now, r[0], to, amount, currency, hash)
-			if trans, err := api.SendAndWait(ctx, t.From, t.Refund, to, currency, amount, 12); err == nil {
+			if trans, err := api.SendAndWait(ctx, t.From, t.Refund, to, currency, amount, 32); err == nil {
 				log.Printf("[INFO] to: %s, amount: %s, tx: %s, time: %s", to, amount, trans.TransactionHash, time.Now())
 			} else {
 				log.Printf("error when SendAndWait: %s", err)
