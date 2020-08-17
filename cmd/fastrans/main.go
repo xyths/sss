@@ -40,6 +40,7 @@ func init() {
 }
 
 type Config struct {
+
 	Interval string // "10s"
 	Source   string
 	Cache    string
@@ -82,7 +83,7 @@ func fastTransfer(ctx *cli.Context) error {
 
 func doWork(ctx context.Context, source, dest, refund string, wait int) {
 	//log.Printf("doWork, try to transfer: %s -> %s", source, dest)
-	api, err := sero.New("127.0.0.1:8545")
+	api, err := sero.New("http://127.0.0.1:8545")
 	defer api.Close()
 
 	// 1. check balance
