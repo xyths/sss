@@ -29,7 +29,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "fast transfer money, detect and transfer in specific period",
-		Version: "0.1.3",
+		Version: "0.1.4",
 		Action:  fastTransfer,
 		Flags: []cli.Flag{
 			ConfigFlag,
@@ -69,6 +69,7 @@ func fastTransfer(ctx *cli.Context) error {
 
 	logger.Sugar.Infof("source: %s...., cache: %s....", cfg.Source, cfg.Cache)
 
+	doWork(ctx.Context, cfg.Source, cfg.Cache, cfg.ReFund, cfg.Wait)
 	for {
 		select {
 		case <-ctx.Context.Done():
