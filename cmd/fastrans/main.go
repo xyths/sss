@@ -8,7 +8,6 @@ import (
 	"github.com/xyths/sero-go"
 	"github.com/xyths/sss/cmd/utils"
 	"gopkg.in/urfave/cli.v2"
-	"log"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -30,7 +29,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "fast transfer money, detect and transfer in specific period",
-		Version: "0.1.2",
+		Version: "0.1.3",
 		Action:  fastTransfer,
 		Flags: []cli.Flag{
 			ConfigFlag,
@@ -60,20 +59,20 @@ func fastTransfer(ctx *cli.Context) error {
 	cfg := Config{}
 
 	if err := hs.ParseJsonConfig(ctx.String(ConfigFlag.Name), &cfg); err != nil {
-		log.Fatalf("error when open config file: %s", err)
+		logger.Sugar.Fatalf("error when open config file: %s", err)
 	}
 
 	interval, err := time.ParseDuration(cfg.Interval)
 	if err != nil {
-		log.Fatalf("interval format error: %s", err)
+		logger.Sugar.Fatalf("interval format error: %s", err)
 	}
 
-	log.Printf("source: %s...., cache: %s....", cfg.Source, cfg.Cache)
+	logger.Sugar.Infof("source: %s...., cache: %s....", cfg.Source, cfg.Cache)
 
 	for {
 		select {
 		case <-ctx.Context.Done():
-			log.Println("fastrans cancelled")
+			logger.Sugar.Info("fastrans cancelled")
 			return nil
 		case <-time.After(interval):
 			doWork(ctx.Context, cfg.Source, cfg.Cache, cfg.ReFund, cfg.Wait)
@@ -93,7 +92,11 @@ func doWork(ctx context.Context, source, dest, refund string, wait int) {
 		logger.Sugar.Errorf("error when call exchange_getBalances: %s", err)
 		return
 	}
-	log.Printf("%s total balance is %v", source, b)
+	if b.SERO == "" {
+		logger.Sugar.Infof("no balance")
+		return
+	}
+	logger.Sugar.Infof("%s total balance is %v", source, b)
 	balance, ok := big.NewInt(0).SetString(b.SERO, 10)
 	if !ok {
 		logger.Sugar.Errorf("balance format error: %v", b)
@@ -101,7 +104,7 @@ func doWork(ctx context.Context, source, dest, refund string, wait int) {
 	}
 	gas := big.NewInt(25000000000000)
 	if balance.Cmp(gas) <= 0 {
-		logger.Sugar.Debugf("balance too low: %s", balance)
+		logger.Sugar.Infof("balance too low: %s", balance)
 		return
 	}
 	balance.Sub(balance, gas)
@@ -109,7 +112,6 @@ func doWork(ctx context.Context, source, dest, refund string, wait int) {
 
 	// 2. try to transfer
 	if _, err = api.SendAndWait(ctx, source, refund, dest, "SERO", balance, wait); err != nil {
-		logger.Sugar.Infof("transfer error: %s", err)
+		logger.Sugar.Errorf("transfer error: %s", err)
 	}
-
 }
