@@ -30,7 +30,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "fast transfer money, detect and transfer in specific period",
-		Version: "0.1.0",
+		Version: "0.1.2",
 		Action:  fastTransfer,
 		Flags: []cli.Flag{
 			ConfigFlag,
@@ -40,12 +40,13 @@ func init() {
 }
 
 type Config struct {
-
 	Interval string // "10s"
 	Source   string
 	Cache    string
 	ReFund   string
 	Wait     int
+
+	Gas int
 }
 
 func main() {
@@ -98,7 +99,7 @@ func doWork(ctx context.Context, source, dest, refund string, wait int) {
 		logger.Sugar.Errorf("balance format error: %v", b)
 		return
 	}
-	gas := big.NewInt(25000)
+	gas := big.NewInt(25000000000000)
 	if balance.Cmp(gas) <= 0 {
 		logger.Sugar.Debugf("balance too low: %s", balance)
 		return
