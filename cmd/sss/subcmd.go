@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/xyths/sss/cmd/utils"
+	"github.com/xyths/sss/extract"
 	. "github.com/xyths/sss/mail"
 	"github.com/xyths/sss/mail/client"
 	"github.com/xyths/sss/share"
@@ -79,6 +80,17 @@ var (
 		Usage:   "test some demo program",
 		Flags: []cli.Flag{
 			utils.MailConfigFlag,
+		},
+	}
+	extractCommand = &cli.Command{
+		Action: extractAction,
+		Name:   "extract",
+		//Aliases: []string{"t"},
+		Usage: "extract address from blockchain",
+		Flags: []cli.Flag{
+			utils.ConfigFlag,
+			utils.StartBlockFlag,
+			utils.EndBlockFlag,
 		},
 	}
 )
@@ -252,4 +264,20 @@ func readStakeList(ctx *cli.Context) []stake.StakeDetail {
 		return stakeList[i].At < stakeList[j].At
 	})
 	return stakeList
+}
+
+func extractAction(ctx *cli.Context) error {
+	config := ctx.String(utils.ConfigFlag.Name)
+	start := ctx.Uint64(utils.StartBlockFlag.Name)
+	end := ctx.Uint64(utils.EndBlockFlag.Name)
+	extractor, err := extract.New(ctx.Context, config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer extractor.Close()
+
+	log.Printf("start extract address from block %d to %d", start, end)
+	err = extractor.Extract(ctx, start, end)
+	log.Println("finish extract")
+	return err
 }

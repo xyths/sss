@@ -42,4 +42,18 @@ var (
 		Aliases: []string{"d"},
 		Usage:   "Report `DATE`, like 20190916",
 	}
+	ConfigFlag = &cli.StringFlag{
+		Name:    "config",
+		Aliases: []string{"c"},
+		Value:   "config.json",
+		Usage:   "Read config from `FILE`",
+	}
+	StartBlockFlag = &cli.Uint64Flag{
+		Name:  "start",
+		Usage: "Start from `BlockNumber`",
+	}
+	EndBlockFlag = &cli.Uint64Flag{
+		Name:  "end",
+		Usage: "End to `BlockNumber`",
+	}
 )

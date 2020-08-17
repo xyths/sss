@@ -14,7 +14,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "The sss(SERO stake statistics) command line interface",
-		Version: "0.0.6",
+		Version: "0.1.0",
 		Action:  sss,
 	}
 	utils.Info(app)
@@ -25,6 +25,7 @@ func init() {
 		profitCommand,
 		mailCommand,
 		testCommand,
+		extractCommand,
 	}
 }
 
