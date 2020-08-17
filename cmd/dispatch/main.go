@@ -28,9 +28,9 @@ var (
 func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
-		Usage:   "fast transfer money, detect and transfer in specific period",
-		Version: "0.1.4",
-		Action:  fastTransfer,
+		Usage:   "dispatch the coin to all destinations",
+		Version: "0.1.0",
+		Action:  dispatch,
 		Flags: []cli.Flag{
 			ConfigFlag,
 		},
@@ -39,11 +39,11 @@ func init() {
 }
 
 type Config struct {
-	Interval string // "10s"
-	Source   string
-	Cache    string
-	ReFund   string
-	Wait     int
+	Interval     string
+	Source       string
+	Destinations []string
+	ReFund       string
+	Wait         int
 }
 
 func main() {
@@ -53,7 +53,7 @@ func main() {
 	}
 }
 
-func fastTransfer(ctx *cli.Context) error {
+func dispatch(ctx *cli.Context) error {
 	cfg := Config{}
 
 	if err := hs.ParseJsonConfig(ctx.String(ConfigFlag.Name), &cfg); err != nil {
@@ -65,22 +65,22 @@ func fastTransfer(ctx *cli.Context) error {
 		logger.Sugar.Fatalf("interval format error: %s", err)
 	}
 
-	logger.Sugar.Infof("source: %s...., cache: %s....", cfg.Source, cfg.Cache)
+	logger.Sugar.Infof("source: %s...., destinations: %v....", cfg.Source, cfg.Destinations)
 
-	doWork(ctx.Context, cfg.Source, cfg.Cache, cfg.ReFund, cfg.Wait)
+	doWork(ctx.Context, cfg.Source, cfg.Destinations, cfg.ReFund, cfg.Wait)
 	for {
 		select {
 		case <-ctx.Context.Done():
 			logger.Sugar.Info("fastrans cancelled")
 			return nil
 		case <-time.After(interval):
-			doWork(ctx.Context, cfg.Source, cfg.Cache, cfg.ReFund, cfg.Wait)
+			doWork(ctx.Context, cfg.Source, cfg.Destinations, cfg.ReFund, cfg.Wait)
 		}
 	}
 
 }
 
-func doWork(ctx context.Context, source, dest, refund string, wait int) {
+func doWork(ctx context.Context, source string, destinations []string, refund string, wait int) {
 	//log.Printf("doWork, try to transfer: %s -> %s", source, dest)
 	api, err := sero.New("http://127.0.0.1:8545")
 	defer api.Close()
@@ -107,10 +107,12 @@ func doWork(ctx context.Context, source, dest, refund string, wait int) {
 		return
 	}
 	balance.Sub(balance, gas)
-	logger.Sugar.Infof("will send %s wei SERO", balance)
+	amount := big.NewInt(0).Div(balance, big.NewInt(2))
+	logger.Sugar.Infof("will send %s wei SERO, %s wei each", balance, amount)
 
 	// 2. try to transfer
-	if _, err = api.SendAndWait(ctx, source, refund, dest, "SERO", balance, wait); err != nil {
+
+	if _, err = api.MultiSendAndWait(ctx, source, refund, destinations, []string{"SERO", "SERO"}, []*big.Int{amount, amount}, wait); err != nil {
 		logger.Sugar.Errorf("transfer error: %s", err)
 	}
 }
