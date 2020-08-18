@@ -101,7 +101,7 @@ func doWork(ctx context.Context, source string, destinations []string, refund st
 		logger.Sugar.Errorf("balance format error: %v", b)
 		return
 	}
-	gas := big.NewInt(25000000000000)
+	gas := big.NewInt(50000000000000)
 	if balance.Cmp(gas) <= 0 {
 		logger.Sugar.Infof("balance too low: %s", balance)
 		return
