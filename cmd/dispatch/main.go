@@ -29,7 +29,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "dispatch the coin to all destinations",
-		Version: "0.1.0",
+		Version: "0.1.2",
 		Action:  dispatch,
 		Flags: []cli.Flag{
 			ConfigFlag,
@@ -44,6 +44,7 @@ type Config struct {
 	Destinations []string
 	ReFund       string
 	Wait         int
+	Reserved     string
 }
 
 func main() {
@@ -67,20 +68,20 @@ func dispatch(ctx *cli.Context) error {
 
 	logger.Sugar.Infof("source: %s...., destinations: %v....", cfg.Source, cfg.Destinations)
 
-	doWork(ctx.Context, cfg.Source, cfg.Destinations, cfg.ReFund, cfg.Wait)
+	doWork(ctx.Context, cfg.Source, cfg.Destinations, cfg.ReFund, cfg.Wait, cfg.Reserved)
 	for {
 		select {
 		case <-ctx.Context.Done():
-			logger.Sugar.Info("fastrans cancelled")
+			logger.Sugar.Info("dispatch cancelled")
 			return nil
 		case <-time.After(interval):
-			doWork(ctx.Context, cfg.Source, cfg.Destinations, cfg.ReFund, cfg.Wait)
+			doWork(ctx.Context, cfg.Source, cfg.Destinations, cfg.ReFund, cfg.Wait, cfg.Reserved)
 		}
 	}
 
 }
 
-func doWork(ctx context.Context, source string, destinations []string, refund string, wait int) {
+func doWork(ctx context.Context, source string, destinations []string, refund string, wait int, reserved string) {
 	//log.Printf("doWork, try to transfer: %s -> %s", source, dest)
 	api, err := sero.New("http://127.0.0.1:8545")
 	defer api.Close()
@@ -101,12 +102,13 @@ func doWork(ctx context.Context, source string, destinations []string, refund st
 		logger.Sugar.Errorf("balance format error: %v", b)
 		return
 	}
-	gas := big.NewInt(50000000000000)
-	if balance.Cmp(gas) <= 0 {
+	gas := big.NewInt(25000000000000)
+	keep, _ := big.NewInt(0).SetString(reserved, 0)
+	if balance.Cmp(keep.Add(keep, gas)) <= 0 {
 		logger.Sugar.Infof("balance too low: %s", balance)
 		return
 	}
-	balance.Sub(balance, gas)
+	balance.Sub(balance, keep)
 	amount := big.NewInt(0).Div(balance, big.NewInt(2))
 	logger.Sugar.Infof("will send %s wei SERO, %s wei each", balance, amount)
 
