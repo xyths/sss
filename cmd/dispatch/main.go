@@ -29,7 +29,7 @@ func init() {
 	app = &cli.App{
 		Name:    filepath.Base(os.Args[0]),
 		Usage:   "dispatch the coin to all destinations",
-		Version: "0.1.2",
+		Version: "0.1.3",
 		Action:  dispatch,
 		Flags: []cli.Flag{
 			ConfigFlag,
