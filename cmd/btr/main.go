@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/xyths/sss/cmd/utils"
 	"github.com/xyths/sss/sero/trader"
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"path/filepath"

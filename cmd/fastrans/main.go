@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"github.com/xyths/hs"
 	"github.com/xyths/hs/logger"
 	"github.com/xyths/sero-go"
 	"github.com/xyths/sss/cmd/utils"
-	"gopkg.in/urfave/cli.v2"
 	"math/big"
 	"os"
 	"path/filepath"

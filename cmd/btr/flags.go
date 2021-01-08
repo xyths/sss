@@ -1,6 +1,6 @@
 package main
 
-import "gopkg.in/urfave/cli.v2"
+import "github.com/urfave/cli/v2"
 
 var (
 	ConfigFlag = &cli.StringFlag{

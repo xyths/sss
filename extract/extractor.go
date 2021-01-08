@@ -6,6 +6,7 @@ import (
 	"github.com/xyths/sero-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
+	"math/big"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func New(ctx context.Context, configFile string) (*Extractor, error) {
 		return nil, err
 	}
 
-	db, err := hs.ConnectMongo(ctx, e.config.Mongo);
+	db, err := hs.ConnectMongo(ctx, e.config.Mongo)
 	if err != nil {
 		return nil, err
 	}
@@ -53,13 +54,13 @@ func (e *Extractor) Extract(ctx context.Context, start, end uint64) error {
 	defer api.Close()
 
 	for current := start; current <= end; current++ {
-		block, pkrs, err1 := e.extractOneBlock(ctx, api, current)
+		//block, pkrs, err1 := e.extractOneBlock(ctx, api, current)
 	}
 	return nil
 }
 
 func (e *Extractor) extractOneBlock(ctx context.Context, api *sero.API, blockNumber uint64) (block sero.Block, pkrs []string, err error) {
-	block, err = api.GetBlockByNumber(ctx, blockNumber)
+	block, err = api.GetBlockByNumber(ctx, big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return
 	}

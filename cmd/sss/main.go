@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"github.com/xyths/sss/cmd/utils"
-	"gopkg.in/urfave/cli.v2"
 	"os"
 	"path/filepath"
 )

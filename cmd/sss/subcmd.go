@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/urfave/cli/v2"
 	"github.com/xyths/sss/cmd/utils"
 	"github.com/xyths/sss/extract"
 	. "github.com/xyths/sss/mail"
 	"github.com/xyths/sss/mail/client"
 	"github.com/xyths/sss/share"
 	"github.com/xyths/sss/stake"
-	"gopkg.in/urfave/cli.v2"
 	"html/template"
 	"io"
 	"log"
@@ -96,7 +96,7 @@ var (
 )
 
 func appendShare(ctx *cli.Context) (err error) {
-	filename := ctx.String(utils.MailConfigFlag.Name);
+	filename := ctx.String(utils.MailConfigFlag.Name)
 	if filename == "" {
 		return errors.New("no config")
 	}
@@ -152,7 +152,7 @@ func profit(ctx *cli.Context) error {
 }
 
 func mail(ctx *cli.Context) error {
-	filename := ctx.String(utils.MailConfigFlag.Name);
+	filename := ctx.String(utils.MailConfigFlag.Name)
 	if filename == "" {
 		return errors.New("no config")
 	}
@@ -171,7 +171,7 @@ func test(ctx *cli.Context) error {
 	subject := "Test send email by Golang"
 
 	tpl1 := template.New("template.html")
-	tpl, err := tpl1.ParseFiles("mail/template/template.html");
+	tpl, err := tpl1.ParseFiles("mail/template/template.html")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -277,7 +277,7 @@ func extractAction(ctx *cli.Context) error {
 	defer extractor.Close()
 
 	log.Printf("start extract address from block %d to %d", start, end)
-	err = extractor.Extract(ctx, start, end)
+	err = extractor.Extract(ctx.Context, start, end)
 	log.Println("finish extract")
 	return err
 }

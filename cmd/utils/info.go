@@ -1,6 +1,6 @@
 package utils
 
-import "gopkg.in/urfave/cli.v2"
+import "github.com/urfave/cli/v2"
 
 var (
 	alex = &cli.Author{
